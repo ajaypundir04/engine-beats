@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  # Caddy Reverse Proxy (routes /auth to Keycloak and /api to Spring Boot)
+  caddy:
+    image: caddy:2-alpine
+    container_name: enginebeats-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      - api
+      - keycloak
+
+  # PostgreSQL 16 (TimescaleDB ready)
+  postgres:
+    image: postgres:16-alpine
+    container_name: enginebeats-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: enginebeats
+      POSTGRES_USER: enginebeats
+      POSTGRES_PASSWORD: enginebeats_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U enginebeats -d enginebeats"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Keycloak OIDC Identity Provider
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: enginebeats-keycloak
+    restart: unless-stopped
+    command: start-dev --import-realm
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/enginebeats
+      KC_DB_USERNAME: enginebeats
+      KC_DB_PASSWORD: enginebeats_dev
+      KC_HEALTH_ENABLED: "true"
+      KC_HTTP_RELATIVE_PATH: /auth
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./services/auth/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Spring Boot Modular Monolith API
+  api:
+    build:
+      context: ./services/api
+      dockerfile: Dockerfile
+    container_name: enginebeats-api
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/enginebeats
+      SPRING_DATASOURCE_USERNAME: enginebeats
+      SPRING_DATASOURCE_PASSWORD: enginebeats_dev
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/auth/realms/engine-beats
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/auth/realms/engine-beats/protocol/openid-connect/certs
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ELM327 OBD-II TCP Car Emulator (Simulates standard PIDs: RPM, Speed, Temp, DTCs)
+  elm327-emulator:
+    build:
+      context: ./tools/elm327-emulator
+      dockerfile: Dockerfile
+    container_name: enginebeats-elm327-emulator
+    restart: unless-stopped
+    ports:
+      - "35000:35000"
+    environment:
+      EMULATOR_PORT: "35000"
+      EMULATOR_BIND: "0.0.0.0"
+
+volumes:
+  postgres-data:

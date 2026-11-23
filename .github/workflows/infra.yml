@@ -1,0 +1,40 @@
+name: Infrastructure CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'infra/**'
+      - '.github/workflows/infra.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'infra/**'
+      - '.github/workflows/infra.yml'
+
+jobs:
+  validate-infra:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.6.2
+
+      - name: OpenTofu Format Check
+        run: tofu fmt -check -recursive infra/
+
+      - name: Validate Staging
+        working-directory: infra/envs/staging
+        run: |
+          tofu init -backend=false
+          tofu validate
+
+      - name: Validate Production
+        working-directory: infra/envs/prod
+        run: |
+          tofu init -backend=false
+          tofu validate

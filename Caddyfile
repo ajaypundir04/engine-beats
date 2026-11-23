@@ -1,0 +1,35 @@
+:80 {
+    # Logging
+    log {
+        output stdout
+        format console
+    }
+
+    # Keycloak Auth routes
+    handle /auth* {
+        reverse_proxy keycloak:8080
+    }
+
+    # API routes
+    handle /api* {
+        reverse_proxy api:8081
+    }
+
+    # Actuator / Health routes
+    handle /actuator* {
+        reverse_proxy api:8081
+    }
+
+    # Swagger / OpenAPI documentation
+    handle /swagger-ui* {
+        reverse_proxy api:8081
+    }
+    handle /v3/api-docs* {
+        reverse_proxy api:8081
+    }
+
+    # Fallback status
+    handle {
+        respond "EngineBeats API Gateway (Development)" 200
+    }
+}

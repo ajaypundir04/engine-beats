@@ -1,0 +1,612 @@
+openapi: 3.0.3
+info:
+  title: EngineBeats Telemetry & Diagnostics API
+  description: |
+    Core REST API for EngineBeats connected vehicle platform.
+    Handles telemetry batch ingestion, vehicle profiles, trip summaries,
+    DTC diagnostics, and subscription entitlements.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8081
+    description: Local API Server
+  - url: https://api.enginebeats.com
+    description: Production Gateway
+
+security:
+  - BearerAuth: []
+
+paths:
+  /actuator/health:
+    get:
+      summary: Health check endpoint
+      tags: [System]
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: UP
+
+  /api/v1/vehicles:
+    get:
+      summary: List all registered vehicles for current user
+      tags: [Vehicles]
+      responses:
+        '200':
+          description: List of vehicles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VehicleResponse'
+    post:
+      summary: Register a new vehicle
+      tags: [Vehicles]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVehicleRequest'
+      responses:
+        '201':
+          description: Vehicle created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleResponse'
+
+  /api/v1/vehicles/{id}:
+    get:
+      summary: Get vehicle by ID
+      tags: [Vehicles]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Vehicle details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleResponse'
+        '404':
+          description: Vehicle not found
+    delete:
+      summary: Delete vehicle by ID
+      tags: [Vehicles]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Vehicle deleted
+
+  /api/v1/telemetry/batches:
+    post:
+      summary: Ingest an idempotent batch of OBD telemetry readings
+      description: |
+        Batched upload from mobile client buffered during offline driving or streamed every 15-30s.
+        Uses client-generated batchId for deduplication and idempotency.
+      tags: [Telemetry]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TelemetryBatchRequest'
+      responses:
+        '200':
+          description: Batch accepted or previously processed (idempotent)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TelemetryBatchResponse'
+        '400':
+          description: Invalid batch data
+
+  /api/v1/telemetry/vehicles/{vehicleId}/latest:
+    get:
+      summary: Get latest snapshot reading for a vehicle
+      tags: [Telemetry]
+      parameters:
+        - name: vehicleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Latest telemetry reading
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TelemetryReadingDto'
+        '404':
+          description: No readings found
+
+  /api/v1/trips:
+    get:
+      summary: List trips for user or vehicle
+      tags: [Trips]
+      parameters:
+        - name: vehicleId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of trips
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TripResponse'
+
+  /api/v1/trips/start:
+    post:
+      summary: Start a new driving trip
+      tags: [Trips]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartTripRequest'
+      responses:
+        '201':
+          description: Trip started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripResponse'
+
+  /api/v1/trips/{id}/end:
+    post:
+      summary: End an active driving trip and compute summaries
+      tags: [Trips]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EndTripRequest'
+      responses:
+        '200':
+          description: Trip ended and summarized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripResponse'
+
+  /api/v1/dtc/records:
+    post:
+      summary: Record detected Diagnostic Trouble Codes from an OBD scan
+      tags: [Diagnostics]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DtcRecordRequest'
+      responses:
+        '201':
+          description: DTC records saved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DtcRecordResponse'
+
+  /api/v1/dtc/lookup/{code}:
+    get:
+      summary: Look up standard SAE diagnostic trouble code definition
+      tags: [Diagnostics]
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+            example: P0300
+      responses:
+        '200':
+          description: DTC definition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DtcLookupResponse'
+        '404':
+          description: Code definition not found
+
+  /api/v1/billing/entitlements:
+    get:
+      summary: Get active subscriptions and feature entitlements for user
+      tags: [Billing]
+      responses:
+        '200':
+          description: User entitlements
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntitlementResponse'
+
+  /api/v1/billing/checkout-session:
+    post:
+      summary: Create Stripe Checkout session URL for web upgrade
+      tags: [Billing]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [priceId]
+              properties:
+                priceId:
+                  type: string
+                  example: price_premium_monthly
+                successUrl:
+                  type: string
+                  example: https://app.enginebeats.com/billing/success
+                cancelUrl:
+                  type: string
+                  example: https://app.enginebeats.com/billing/cancel
+      responses:
+        '200':
+          description: Checkout session created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutSessionResponse'
+
+  /api/v1/billing/webhooks/stripe:
+    post:
+      summary: Webhook receiver for Stripe checkout & subscription updates
+      tags: [Billing]
+      security: []
+      parameters:
+        - name: Stripe-Signature
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Webhook processed
+
+  /api/v1/billing/webhooks/revenuecat:
+    post:
+      summary: Webhook receiver for Apple / Google Play in-app purchase receipts
+      tags: [Billing]
+      security: []
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Webhook processed
+
+  /api/v1/exports/trips.csv:
+    get:
+      summary: Export trip data as CSV (Requires PREMIUM entitlement)
+      tags: [Exports]
+      responses:
+        '200':
+          description: CSV file download
+          content:
+            text/csv:
+              schema:
+                type: string
+        '403':
+          description: Premium subscription required
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    CreateVehicleRequest:
+      type: object
+      required: [vin, make, model, year]
+      properties:
+        vin:
+          type: string
+          example: 1HGCR2F83HA123456
+        make:
+          type: string
+          example: Honda
+        model:
+          type: string
+          example: Accord
+        year:
+          type: integer
+          example: 2017
+        nickname:
+          type: string
+          example: Daily Commuter
+        protocol:
+          type: string
+          example: ISO 15765-4 (CAN 11/500)
+
+    VehicleResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+        vin:
+          type: string
+        make:
+          type: string
+        model:
+          type: string
+        year:
+          type: integer
+        nickname:
+          type: string
+        protocol:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    TelemetryBatchRequest:
+      type: object
+      required: [batchId, vehicleId, readings]
+      properties:
+        batchId:
+          type: string
+          format: uuid
+          description: Client-generated UUID for idempotency
+        vehicleId:
+          type: string
+          format: uuid
+        tripId:
+          type: string
+          format: uuid
+        readings:
+          type: array
+          items:
+            $ref: '#/components/schemas/TelemetryReadingDto'
+
+    TelemetryReadingDto:
+      type: object
+      required: [timestamp]
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        rpm:
+          type: number
+          format: float
+          example: 2250.0
+        speedKmh:
+          type: number
+          format: float
+          example: 65.5
+        coolantTempC:
+          type: integer
+          example: 88
+        throttlePosPct:
+          type: number
+          format: float
+          example: 24.3
+        fuelLevelPct:
+          type: number
+          format: float
+          example: 72.0
+        mafGps:
+          type: number
+          format: float
+          example: 14.8
+        batteryVoltage:
+          type: number
+          format: float
+          example: 13.8
+        ambientTempC:
+          type: integer
+          example: 21
+
+    TelemetryBatchResponse:
+      type: object
+      properties:
+        batchId:
+          type: string
+          format: uuid
+        recordsProcessed:
+          type: integer
+        status:
+          type: string
+          example: PROCESSED
+
+    StartTripRequest:
+      type: object
+      required: [vehicleId]
+      properties:
+        vehicleId:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: Morning Commute
+
+    EndTripRequest:
+      type: object
+      properties:
+        distanceKm:
+          type: number
+          format: float
+          example: 14.2
+        fuelConsumedLiters:
+          type: number
+          format: float
+          example: 1.1
+
+    TripResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        vehicleId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+        title:
+          type: string
+        startedAt:
+          type: string
+          format: date-time
+        endedAt:
+          type: string
+          format: date-time
+        distanceKm:
+          type: number
+        maxSpeedKmh:
+          type: number
+        avgSpeedKmh:
+          type: number
+        fuelConsumedLiters:
+          type: number
+          format: float
+        status:
+          type: string
+          example: COMPLETED
+
+    DtcRecordRequest:
+      type: object
+      required: [vehicleId, codes]
+      properties:
+        vehicleId:
+          type: string
+          format: uuid
+        codes:
+          type: array
+          items:
+            type: string
+            example: P0300
+        milStatus:
+          type: boolean
+          example: true
+
+    DtcRecordResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        vehicleId:
+          type: string
+          format: uuid
+        code:
+          type: string
+          example: P0300
+        description:
+          type: string
+          example: Random/Multiple Cylinder Misfire Detected
+        severity:
+          type: string
+          example: CRITICAL
+        milActive:
+          type: boolean
+        detectedAt:
+          type: string
+          format: date-time
+
+    DtcLookupResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          example: P0171
+        system:
+          type: string
+          example: Powertrain / Fuel & Air Metering
+        description:
+          type: string
+          example: System Too Lean (Bank 1)
+        severity:
+          type: string
+          example: MEDIUM
+        commonCauses:
+          type: array
+          items:
+            type: string
+
+    EntitlementResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+        isPremium:
+          type: boolean
+          example: true
+        plan:
+          type: string
+          example: PRO_ANNUAL
+        expiresAt:
+          type: string
+          format: date-time
+        features:
+          type: array
+          items:
+            type: string
+          example: ["TRIP_HISTORY_SYNC", "DTC_DEEP_ANALYSIS", "CSV_EXPORT", "MULTI_VEHICLE"]
+
+    CheckoutSessionResponse:
+      type: object
+      properties:
+        sessionId:
+          type: string
+        checkoutUrl:
+          type: string
+          example: https://checkout.stripe.com/pay/cs_test_...

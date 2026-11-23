@@ -1,0 +1,72 @@
+# Operating System Files
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# IDE Files
+.idea/
+*.iml
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Java / Maven
+target/
+*.class
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+
+# Dart & Flutter
+.dart_tool/
+.packages
+build/
+.pub-cache/
+.pub/
+*.lock
+!apps/mobile/pubspec.lock
+!packages/obd-core/pubspec.lock
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+venv/
+ENV/
+env/
+
+# Terraform / OpenTofu
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+!*.tfvars.example
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraform.lock.hcl
+
+# Keycloak / Docker Volumes
+keycloak-data/
+postgres-data/
+
+# Secrets
+*.pem
+*.key
+*.p12
+*.crt
+secring.*
+*.sops.*

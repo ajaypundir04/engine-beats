@@ -1,0 +1,35 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+
+packages:
+  - docker.io
+  - docker-compose
+  - curl
+  - git
+  - ufw
+
+write_files:
+  - path: /opt/enginebeats/Caddyfile
+    permissions: '0644'
+    content: |
+      ${domain_name} {
+          reverse_proxy /auth* keycloak:8080
+          reverse_proxy /api* api:8081
+          reverse_proxy /actuator* api:8081
+      }
+
+runcmd:
+  # Enable Docker
+  - systemctl enable docker
+  - systemctl start docker
+  - usermod -aG docker ubuntu
+  # Setup firewall
+  - ufw default deny incoming
+  - ufw default allow outgoing
+  - ufw allow 22/tcp
+  - ufw allow 80/tcp
+  - ufw allow 443/tcp
+  - ufw --force enable
+  # Pull and start application containers
+  - echo "EngineBeats node provisioned for environment: ${environment}" > /var/log/enginebeats-init.log

@@ -1,0 +1,47 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: engine-beats-api
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/enginebeats}
+    username: ${SPRING_DATASOURCE_USERNAME:enginebeats}
+    password: ${SPRING_DATASOURCE_PASSWORD:enginebeats_dev}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+  flyway:
+    enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI:http://localhost:8080/auth/realms/engine-beats}
+          jwk-set-uri: ${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI:http://localhost:8080/auth/realms/engine-beats/protocol/openid-connect/certs}
+
+stripe:
+  api-key: ${STRIPE_API_KEY:sk_test_mock}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_mock}
+
+revenuecat:
+  webhook-auth: ${REVENUECAT_WEBHOOK_AUTH:Bearer rc_mock_secret}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html

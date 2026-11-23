@@ -1,0 +1,25 @@
+name: API Contracts Validation
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'contracts/**'
+      - '.github/workflows/contracts.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'contracts/**'
+      - '.github/workflows/contracts.yml'
+
+jobs:
+  lint-openapi:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate OpenAPI spec with Redocly CLI
+        uses: redocly/cli/actions/lint@v1
+        with:
+          args: 'contracts/openapi.yaml'

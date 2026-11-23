@@ -1,0 +1,123 @@
+{
+  "id": "engine-beats",
+  "realm": "engine-beats",
+  "displayName": "EngineBeats Connected Car",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "accessTokenLifespan": 900,
+  "ssoSessionIdleTimeout": 86400,
+  "roles": {
+    "realm": [
+      {
+        "name": "USER",
+        "description": "Standard registered driver"
+      },
+      {
+        "name": "PREMIUM_USER",
+        "description": "Subscriber with unlimited vehicle sync, exports, and deep DTC diagnostics"
+      },
+      {
+        "name": "ADMIN",
+        "description": "System administrator"
+      }
+    ]
+  },
+  "groups": [],
+  "defaultRoles": [
+    "USER"
+  ],
+  "clients": [
+    {
+      "clientId": "engine-beats-api",
+      "name": "EngineBeats Spring Boot Resource Server",
+      "enabled": true,
+      "bearerOnly": true,
+      "protocol": "openid-connect"
+    },
+    {
+      "clientId": "engine-beats-mobile",
+      "name": "EngineBeats Mobile App",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "protocol": "openid-connect",
+      "redirectUris": [
+        "enginebeats://oauth2redirect",
+        "http://localhost:8080/*",
+        "http://localhost:*",
+        "https://app.enginebeats.com/*"
+      ],
+      "webOrigins": [
+        "*"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "enginebeats://logout##http://localhost:*"
+      }
+    },
+    {
+      "clientId": "engine-beats-web",
+      "name": "EngineBeats Web Dashboard",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "protocol": "openid-connect",
+      "redirectUris": [
+        "http://localhost:3000/*",
+        "https://app.enginebeats.com/*"
+      ],
+      "webOrigins": [
+        "*"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      }
+    }
+  ],
+  "users": [
+    {
+      "username": "demo",
+      "enabled": true,
+      "email": "demo@enginebeats.com",
+      "firstName": "Alex",
+      "lastName": "Driver",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "demo123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "USER"
+      ]
+    },
+    {
+      "username": "premium",
+      "enabled": true,
+      "email": "premium@enginebeats.com",
+      "firstName": "Sarah",
+      "lastName": "Racer",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "premium123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "USER",
+        "PREMIUM_USER"
+      ]
+    }
+  ]
+}
