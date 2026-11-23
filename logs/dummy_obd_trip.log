@@ -1,0 +1,67 @@
+# =====================================================================
+# EngineBeats Dummy OBD-II Vehicle Diagnostic Session
+# Vehicle: 2021 Honda Accord Sport 2.0T (VIN: 1HGCR2F83HA123456)
+# Protocol: ISO 15765-4 (CAN 11-bit / 500 kbaud)
+# Adapter: ELM327 v1.5 WiFi Interface (127.0.0.1:35000)
+# Capture Profile: Urban Commute with Stop-and-Go & Highway Acceleration
+# =====================================================================
+
+2026-11-23T19:35:00.100Z [TX] ATZ
+2026-11-23T19:35:00.220Z [RX] ELM327 v1.5
+2026-11-23T19:35:00.225Z [TX] ATE0
+2026-11-23T19:35:00.245Z [RX] OK
+2026-11-23T19:35:00.250Z [TX] ATH0
+2026-11-23T19:35:00.270Z [RX] OK
+2026-11-23T19:35:00.275Z [TX] ATS0
+2026-11-23T19:35:00.295Z [RX] OK
+2026-11-23T19:35:00.300Z [TX] ATSP0
+2026-11-23T19:35:00.320Z [RX] OK
+2026-11-23T19:35:00.325Z [TX] ATRV
+2026-11-23T19:35:00.345Z [RX] 12.6V
+
+# Engine Crank & Warm-up Phase
+2026-11-23T19:35:01.000Z [TX] 010C
+2026-11-23T19:35:01.040Z [RX] 41 0C 0D 80    # RPM: 864 rpm (Engine Idle)
+2026-11-23T19:35:01.045Z [TX] 010D
+2026-11-23T19:35:01.075Z [RX] 41 0D 00       # Speed: 0 km/h (Stationary)
+2026-11-23T19:35:01.080Z [TX] 0105
+2026-11-23T19:35:01.110Z [RX] 41 05 55       # Coolant: 45 °C
+2026-11-23T19:35:01.115Z [TX] 0111
+2026-11-23T19:35:01.140Z [RX] 41 11 25       # Throttle: 14.5%
+2026-11-23T19:35:01.145Z [TX] 012F
+2026-11-23T19:35:01.170Z [RX] 41 2F B3       # Fuel Level: 70.2%
+2026-11-23T19:35:01.175Z [TX] ATRV
+2026-11-23T19:35:01.200Z [RX] 14.1V          # Alternator Charging Active
+
+# Acceleration & Cruising Phase
+2026-11-23T19:35:05.000Z [TX] 010C
+2026-11-23T19:35:05.035Z [RX] 41 0C 23 28    # RPM: 2250 rpm (Cruising)
+2026-11-23T19:35:05.040Z [TX] 010D
+2026-11-23T19:35:05.065Z [RX] 41 0D 32       # Speed: 50 km/h
+2026-11-23T19:35:05.070Z [TX] 0110
+2026-11-23T19:35:05.095Z [RX] 41 10 05 DC    # MAF: 15.00 g/s
+2026-11-23T19:35:05.100Z [TX] 0111
+2026-11-23T19:35:05.125Z [RX] 41 11 4A       # Throttle: 29.0%
+2026-11-23T19:35:05.130Z [TX] 0105
+2026-11-23T19:35:05.155Z [RX] 41 05 78       # Coolant: 80 °C
+
+# Highway Pull
+2026-11-23T19:35:10.000Z [TX] 010C
+2026-11-23T19:35:10.035Z [RX] 41 0C 36 B0    # RPM: 3500 rpm (Overtaking)
+2026-11-23T19:35:10.040Z [TX] 010D
+2026-11-23T19:35:10.065Z [RX] 41 0D 64       # Speed: 100 km/h
+2026-11-23T19:35:10.070Z [TX] 0104
+2026-11-23T19:35:10.095Z [RX] 41 04 80       # Engine Load: 50.2%
+2026-11-23T19:35:10.100Z [TX] 0105
+2026-11-23T19:35:10.125Z [RX] 41 05 84       # Coolant: 92 °C (Operating Temp)
+
+# ECU Diagnostic Scan Mode 03 (Request Active DTCs)
+2026-11-23T19:35:15.000Z [TX] 03
+2026-11-23T19:35:15.080Z [RX] 43 01 71 03 00 00 00
+# Decoded DTCs:
+#   -> P0171: Powertrain / Fuel & Air Metering (System Too Lean Bank 1)
+#   -> P0300: Powertrain / Ignition System (Random/Multiple Cylinder Misfire Detected)
+
+# Clear DTCs Mode 04 Request
+2026-11-23T19:35:20.000Z [TX] 04
+2026-11-23T19:35:20.120Z [RX] 44             # Positive Response: DTCs Cleared

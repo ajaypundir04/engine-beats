@@ -1,0 +1,45 @@
+[
+  {
+    "batchId": "b101c001-2026-4000-8000-000000000001",
+    "vehicleId": "v1000000-0000-0000-0000-000000000001",
+    "tripId": "t1000000-0000-0000-0000-000000000001",
+    "readings": [
+      {
+        "timestamp": "2026-11-23T19:35:00Z",
+        "rpm": 850.0,
+        "speedKmh": 0.0,
+        "coolantTempC": 50,
+        "throttlePosPct": 14.5,
+        "fuelLevelPct": 70.2,
+        "mafGps": 3.4,
+        "batteryVoltage": 14.1,
+        "ambientTempC": 18,
+        "engineLoadPct": 19.5
+      },
+      {
+        "timestamp": "2026-11-23T19:35:05Z",
+        "rpm": 2250.0,
+        "speedKmh": 50.0,
+        "coolantTempC": 80,
+        "throttlePosPct": 29.0,
+        "fuelLevelPct": 70.1,
+        "mafGps": 15.0,
+        "batteryVoltage": 13.9,
+        "ambientTempC": 18,
+        "engineLoadPct": 38.0
+      },
+      {
+        "timestamp": "2026-11-23T19:35:10Z",
+        "rpm": 3500.0,
+        "speedKmh": 100.0,
+        "coolantTempC": 92,
+        "throttlePosPct": 54.0,
+        "fuelLevelPct": 69.8,
+        "mafGps": 28.5,
+        "batteryVoltage": 13.8,
+        "ambientTempC": 18,
+        "engineLoadPct": 52.4
+      }
+    ]
+  }
+]

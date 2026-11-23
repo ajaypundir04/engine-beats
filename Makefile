@@ -1,15 +1,19 @@
-.PHONY: help dev up down clean test test-api test-packages run-api run-emulator
+.PHONY: help dev up down clean test test-api test-packages run-api run-emulator run-local
 
 JAVA_HOME ?= /home/shankar/.sdkman/candidates/java/21.0.7-oracle
 
 help:
 	@echo "EngineBeats Development Commands:"
+	@echo "  make run-local    Run local emulator with dummy logs and telemetry streaming"
 	@echo "  make dev          Start local containers (Postgres, Keycloak, Caddy, Emulator)"
 	@echo "  make down         Stop all local containers"
 	@echo "  make test-api     Run Spring Boot API unit & integration tests"
 	@echo "  make run-api      Run Spring Boot API locally with Maven"
 	@echo "  make emulator     Run Python ELM327 Car Emulator locally"
 	@echo "  make clean        Clean build artifacts and containers"
+
+run-local:
+	./run-local.sh
 
 dev:
 	docker-compose up -d postgres keycloak elm327-emulator caddy

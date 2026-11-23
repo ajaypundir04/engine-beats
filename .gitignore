@@ -70,3 +70,9 @@ postgres-data/
 *.crt
 secring.*
 *.sops.*
+
+# Local Runner & Logs
+#logs/
+#*.log
+#.run-local.pid
+

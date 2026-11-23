@@ -52,6 +52,7 @@ EngineBeats is an end-to-end connected vehicle platform featuring:
 │   └── envs/               # Environment configs (dev, staging, prod)
 ├── tools/
 │   └── elm327-emulator/    # Python OBD-II ELM327 TCP socket emulator
+├── run-local.sh            # One-command local runner & dummy log generator
 ├── docker-compose.yml      # Local dev environment
 ├── Makefile                # Dev convenience commands
 └── Caddyfile               # Local proxy configuration
@@ -61,13 +62,21 @@ EngineBeats is an end-to-end connected vehicle platform featuring:
 
 ## Quickstart: Local Development
 
-### Prerequisites
-- Docker & Docker Compose
-- Java 21+ and Maven 3.9+
-- Python 3.10+ (for emulator)
-- Flutter 3.19+ (for mobile app)
+### 1. Instant Local Run (No Docker required)
+To immediately start the car simulator on port 35000 and generate live & dummy telemetry log files:
+```bash
+./run-local.sh
+# Or in background: ./run-local.sh start
+# Check status:     ./run-local.sh status
+# Stop services:    ./run-local.sh stop
+```
 
-### 1. Start Infrastructure & Emulators
+This generates realistic test logs in `logs/`:
+- `logs/dummy_obd_trip.log`: Realistic raw OBD-II ELM327 command/response session trace.
+- `logs/dummy_telemetry.json`: Pre-formatted JSON telemetry batches ready for ingestion testing.
+- `logs/enginebeats-local.log`: Real-time streaming log of the vehicle emulator physics.
+
+### 2. Full Containerized Infrastructure
 Run all backing services (PostgreSQL, Keycloak, ELM327 car emulator, and Caddy proxy):
 
 ```bash
