@@ -4,6 +4,7 @@ import '../../core/theme/app_theme.dart';
 import '../obd/dongle_selector_dialog.dart';
 import '../obd/obd_connection_service.dart';
 import '../obd/obd_polling_service.dart';
+import '../trips/trip_recording_controller.dart';
 import 'widgets/circular_gauge.dart';
 import 'widgets/connection_banner.dart';
 import 'widgets/metric_card.dart';
@@ -36,6 +37,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ref.read(obdPollingProvider).stopPolling();
       }
     });
+
+    // Update active trip computer metrics with live speed
+    ref.listenManual(obdPollingProvider, (previous, next) {
+      final currentReading = next.latestReading;
+      if (currentReading != null && currentReading.speedKmh != null) {
+        ref.read(tripRecordingProvider.notifier).updateMetrics(currentReading.speedKmh!, 0.25);
+      }
+    });
+
+    // Auto-connect on startup (Virtual simulation on Web/Demo, or TCP dongle)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(obdConnectionProvider).autoConnect();
+    });
   }
 
   void _showConnectDialog() {
@@ -44,6 +58,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       builder: (context) => DongleSelectorDialog(
         onConnect: (host, port) {
           ref.read(obdConnectionProvider).connectTcp(host: host, port: port);
+        },
+        onConnectVirtual: () {
+          ref.read(obdConnectionProvider).connectVirtual();
         },
       ),
     );

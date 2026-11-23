@@ -1,0 +1,11 @@
+{
+    "name": "EngineBeats",
+    "short_name": "EngineBeats",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#0F141C",
+    "theme_color": "#0F141C",
+    "description": "EngineBeats Connected Vehicle Telemetry & Diagnostics",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false
+}

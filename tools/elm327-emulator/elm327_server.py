@@ -6,6 +6,8 @@ Generates realistic dynamic vehicle telemetry (RPM, speed, temp, throttle, MAF)
 and handles standard AT commands and Mode 01/03/04 diagnostic requests.
 """
 
+from __future__ import annotations
+
 import math
 import os
 import re
@@ -13,6 +15,7 @@ import socket
 import sys
 import threading
 import time
+from typing import Tuple
 
 PORT = int(os.environ.get("EMULATOR_PORT", 35000))
 BIND_HOST = os.environ.get("EMULATOR_BIND", "0.0.0.0")
@@ -63,7 +66,7 @@ class SimulatedVehicleState:
             # Engine load
             self.engine_load_pct = 18.0 + (self.throttle_pct * 0.8)
 
-def encode_dtc(code: str) -> tuple[int, int]:
+def encode_dtc(code: str) -> Tuple[int, int]:
     """Encode standard DTC like P0171 or C0300 into 2 bytes."""
     prefix = code[0].upper()
     prefix_bits = {"P": 0b00, "C": 0b01, "B": 0b10, "U": 0b11}.get(prefix, 0)

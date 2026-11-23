@@ -225,7 +225,7 @@ start() {
 
     # 1. Start Python ELM327 Car Emulator in background
     echo -e "${CYAN}[*] Launching ELM327 Vehicle Simulator on port $EMULATOR_PORT...${RESET}"
-    EMULATOR_PORT="$EMULATOR_PORT" python3 "$PROJECT_ROOT/tools/elm327-emulator/elm327_server.py" > "$EMULATOR_LOG" 2>&1 &
+    PYTHONUNBUFFERED=1 EMULATOR_PORT="$EMULATOR_PORT" python3 -u "$PROJECT_ROOT/tools/elm327-emulator/elm327_server.py" > "$EMULATOR_LOG" 2>&1 &
     EMULATOR_PID=$!
 
     sleep 1
@@ -238,7 +238,7 @@ start() {
 
     # 2. Start Live Vehicle Telemetry Logger Daemon
     # Queries the simulator every second, updates physics, and logs to enginebeats-local.log
-    python3 -c "
+    PYTHONUNBUFFERED=1 python3 -u -c "
 import socket, time, sys, datetime
 
 sock = None
