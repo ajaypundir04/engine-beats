@@ -123,8 +123,29 @@ EngineBeats implements a three-channel billing model:
 
 ---
 
+## Documentation
+
+- **[System Architecture Guide](ARCHITECTURE.md)**: Comprehensive deep dive into the end-to-end data flow, protocol decoding (`packages/obd-core`), mobile offline buffering, Keycloak OIDC/PKCE security, Spring Boot modular monolith, and TimescaleDB schema.
+- **[Future Updates & Technical Roadmap](FUTURE_UPDATES.md)**: Detailed multi-phase roadmap covering native BLE 5.0, sub-second WebSockets, Edge AI predictive misfire detection, Apple CarPlay / Android Auto, and custom ESP32 LTE/GPS hardware.
+- **[Homelab 24/7 Hosting Guide](HOMELAB_HOSTING_GUIDE.md)**: Complete step-by-step setup to host the backend and database 24/7 on a dedicated Raspberry Pi 5 or refurbished 1L Mini PC via zero-port-forwarding Cloudflare Tunnels.
+
+---
+
+## Homelab & Self-Hosting Guide
+
+Want to run EngineBeats 24/7 at home on a dedicated low-power machine without using your personal laptop or cloud subscription fees?
+Read the comprehensive **[Homelab Hosting Guide](HOMELAB_HOSTING_GUIDE.md)**:
+- Hardware comparison: **Raspberry Pi 5 vs. Refurbished 1-Liter Mini PC (ThinkCentre/OptiPlex)**.
+- Headless Ubuntu Server 24.04 setup.
+- 24/7 background container deployment (`docker-compose up -d`).
+- Zero-port-forwarding public access via encrypted **Cloudflare Tunnel** (`api.yourdomain.com`).
+- BIOS AC power loss recovery and automated nightly database backups.
+
+---
+
 ## Infrastructure & Multi-Region Strategy
 
+- **Homelab / Self-Hosted**: 24/7 low-power Raspberry Pi 5 or 1L Mini PC with Cloudflare Tunnel (see [Homelab Guide](HOMELAB_HOSTING_GUIDE.md)).
 - **Dev / Local**: Docker Compose with local PostgreSQL, Keycloak, and ELM327 simulator.
 - **Staging / Beta**: Free-tier deployment on Oracle Always Free (Ampere A1 ARM64) or Aiven Managed Postgres + Cloudflare.
 - **Production**: Seamless swap to small EU VPS (e.g., Hetzner Cloud in Germany) via Terraform module inputs without application changes.
